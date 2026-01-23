@@ -1,8 +1,6 @@
 # Import libraries
 import uuid
 import json
-from datetime import datetime
-import pandas as pd
 from sqlalchemy import text
 from config.api_endpoints import ENDPOINTS
 from config.database import get_engine

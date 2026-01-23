@@ -2,18 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from sqlalchemy import create_engine
-import os
-from dotenv import load_dotenv
-
-
-load_dotenv()
-
-
-# Database connection
-def get_engine():
-    conn_string = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
-    return create_engine(conn_string)
+from config.database import get_engine
 
 # Page config
 st.set_page_config(
