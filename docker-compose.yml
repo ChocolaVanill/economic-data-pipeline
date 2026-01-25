@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: malaysia_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-malaysia_data}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/ddl:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pipeline_network
+
+  pipeline:
+    build: .
+    container_name: data_pipeline
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-malaysia_data}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    volumes:
+      - .:/app
+    networks:
+      - pipeline_network
+    command: >
+      bash -c "
+        echo 'Running ingestion...' &&
+        python -m src.ingestion.gdp_ingestion &&
+        python -m src.ingestion.cpi_ingestion &&
+        python -m src.ingestion.labour_ingestion &&
+        python -m src.ingestion.exchange_rate_ingestion &&
+        python -m src.ingestion.population_ingestion &&
+        echo 'Running transformation...' &&
+        python -m src.transformation.bronze_to_silver &&
+        python -m src.transformation.silver_to_gold &&
+        echo 'Pipeline complete!'
+      "
+
+  dashboard:
+    build: .
+    container_name: streamlit_dashboard
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-malaysia_data}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    networks:
+      - pipeline_network
+    command: streamlit run dashboards/streamlit/app.py --server.address=0.0.0.0
+
+networks:
+  pipeline_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

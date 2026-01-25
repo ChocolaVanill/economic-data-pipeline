@@ -64,7 +64,7 @@ try:
         name='3-Quarter MA',
         line=dict(dash='dash')
     )
-    st.plotly_chart(fig, width='stretch')
+    st.plotly_chart(fig, use_container_width=True)
 
     # YoY Growth Chart
     st.subheader("Year-over-Year Growth Rate")
@@ -75,10 +75,11 @@ try:
         x='trend_date',
         y='yoy_change_pct',
         title='GDP Growth Rate (YoY %)',
+        labels={'trend_date': 'Date', 'yoy_change_pct': 'Growth Rate (%)'},
         color='yoy_change_pct',
         color_continuous_scale=['red', 'yellow', 'green']
     )
-    st.plotly_chart(fig2, width='stretch')
+    st.plotly_chart(fig2, use_container_width=True)
 
     # Raw Data Table
     with st.expander("View Raw Data"):
