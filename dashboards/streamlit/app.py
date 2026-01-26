@@ -23,30 +23,43 @@ def load_gdp_data():
 
 try:
     gdp_df = load_gdp_data()
-
+    
     # KPI cards
     col1, col2, col3 = st.columns(3)
 
-    latest = gdp_df.iloc[-1]
+    if gdp_df.empty:
+        st.warning("No GDP data available yet. Please run the pipeline to ingest data.")
+        latest = None
+    else:
+        latest = gdp_df.iloc[-1]
 
     with col1:
-        st.metric(
-            label="Latest GDP (RM Million)",
-            value=f"{latest['gdp_value']:,.0f}",
-            delta=f"{latest['yoy_change_pct']:.1f}% YoY" if pd.notna(latest['yoy_change_pct']) else None
-        )
+        if latest is not None:
+            st.metric(
+                label="Latest GDP (RM Million)",
+                value=f"{latest['gdp_value']:,.0f}",
+                delta=f"{latest['yoy_change_pct']:.1f}% YoY" if pd.notna(latest['yoy_change_pct']) else None
+            )
+        else:
+             st.metric(label="Latest GDP", value="N/A")
 
     with col2:
-        st.metric(
-            label="3-Quarter Moving Average",
-            value=f"{latest['ma_3_quarter']:,.0f}" if pd.notna(latest['ma_3_quarter']) else "N/A"
-        )
+        if latest is not None:
+            st.metric(
+                label="3-Quarter Moving Average",
+                value=f"{latest['ma_3_quarter']:,.0f}" if pd.notna(latest['ma_3_quarter']) else "N/A"
+            )
+        else:
+            st.metric(label="3-Quarter Moving Average", value="N/A")
 
     with col3:
-        st.metric(
-            label="Trend Direction",
-            value=latest['trend_direction'].title() if latest['trend_direction'] else "N/A"
-        )
+        if latest is not None:
+            st.metric(
+                label="Trend Direction",
+                value=latest['trend_direction'].title() if latest['trend_direction'] else "N/A"
+            )
+        else:
+            st.metric(label="Trend Direction", value="N/A")
 
     # GDP Trend Chart
     st.subheader("GDP Trend Over Time")
