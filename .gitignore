@@ -30,6 +30,7 @@ Thumbs.db
 .pytest_cache/
 .coverage
 dbt/profiles.yml
+dbt/.user.yml
 dbt/economic_data_pipeline/target/
 dbt/economic_data_pipeline/dbt_packages/
 datagovmy_de_project.md
