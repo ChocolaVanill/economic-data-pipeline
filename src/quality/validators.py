@@ -1,7 +1,6 @@
 """Data quality validation checks"""
 # Import libraries
 import pandas as pd
-from datetime import datetime, timedelta
 from src.utils.logger import get_logger
 
 

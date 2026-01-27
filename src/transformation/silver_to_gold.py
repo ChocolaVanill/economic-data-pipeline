@@ -1,6 +1,5 @@
 # Import libraries
 import pandas as pd
-from sqlalchemy import text
 from config.database import get_engine
 from src.utils.logger import get_logger
 
