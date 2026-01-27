@@ -1,0 +1,23 @@
+name: economic_data_pipeline
+version: 1.0.0
+config-version: 2
+
+profile: economic_data_pipeline
+
+model-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  economic_data_pipeline:
+    +materialized: table
+    silver:
+      +schema: silver
+    gold:
+      +schema: gold

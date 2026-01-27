@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: gdp_quarterly
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: series
+        tests: [not_null]
+
+  - name: cpi_monthly
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: category
+        tests: [not_null]
+
+  - name: labour_monthly
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: metric
+        tests: [not_null]
+
+  - name: exchange_rates_daily
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: currency_code
+        tests: [not_null]
+
+  - name: population_annual
+    columns:
+      - name: date
+        tests: [not_null]
+
+  - name: gdp_trends
+    columns:
+      - name: trend_date
+        tests: [not_null]
+
+  - name: cpi_trends
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: category
+        tests: [not_null]
+
+  - name: labour_summary
+    columns:
+      - name: date
+        tests: [not_null]
+
+  - name: exchange_rate_analytics
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: currency_code
+        tests: [not_null]
+
+  - name: population_trends
+    columns:
+      - name: date
+        tests: [not_null]

@@ -1,0 +1,12 @@
+economic_data_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', env_var('POSTGRES_HOST', 'localhost')) }}"
+      user: "{{ env_var('PGUSER', env_var('POSTGRES_USER', 'postgres')) }}"
+      password: "{{ env_var('PGPASSWORD', env_var('POSTGRES_PASSWORD', 'postgres')) }}"
+      port: "{{ env_var('PGPORT', env_var('POSTGRES_PORT', '5432')) | int }}"
+      dbname: "{{ env_var('PGDATABASE', env_var('POSTGRES_DB', 'malaysia_data')) }}"
+      schema: analytics
+      threads: 4

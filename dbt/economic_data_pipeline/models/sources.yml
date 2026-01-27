@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: gdp_raw
+      - name: cpi_raw
+      - name: labour_raw
+      - name: exchange_rates_raw
+      - name: population_raw

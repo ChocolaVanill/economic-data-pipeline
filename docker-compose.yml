@@ -9,6 +9,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30
+    PIP_ADDITIONAL_REQUIREMENTS: dbt-postgres==1.8.2
     POSTGRES_HOST: postgres
     POSTGRES_PORT: 5432
     PYTHONPATH: /opt/airflow/pipeline
@@ -16,6 +17,7 @@ x-airflow-common: &airflow-common
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./:/opt/airflow/pipeline
+    - ./dbt/profiles.yml:/opt/airflow/.dbt/profiles.yml:ro
 
 services:
   # Main Database
@@ -30,7 +32,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./sql/ddl:/docker-entrypoint-initdb.d
+      - ./sql/ddl/01_bronze_schema.sql:/docker-entrypoint-initdb.d/01_bronze_schema.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
@@ -127,8 +129,7 @@ services:
         python -m src.ingestion.exchange_rate_ingestion &&
         python -m src.ingestion.population_ingestion &&
         echo 'Running transformation...' &&
-        python -m src.transformation.bronze_to_silver &&
-        python -m src.transformation.silver_to_gold &&
+        dbt build --project-dir /app/dbt/economic_data_pipeline --profiles-dir /app/dbt &&
         echo 'Pipeline complete!'
       "
 

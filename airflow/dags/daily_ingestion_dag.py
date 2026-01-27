@@ -58,23 +58,19 @@ with DAG(
         )
 
     # TRANSFORMATION TASKS
-    with TaskGroup('transformation', tooltip='Bronze -> Silver -> Gold') as transform_group:
+    with TaskGroup('transformation', tooltip='Bronze -> Silver -> Gold (dbt)') as transform_group:
 
-        transform_silver = BashOperator(
-            task_id='bronze_to_silver',
-            bash_command=f'cd {PIPELINE_PATH} && python -m src.transformation.bronze_to_silver'
+        dbt_build = BashOperator(
+            task_id='dbt_build',
+            bash_command=(
+                f'cd {PIPELINE_PATH} && '
+                'dbt build --project-dir dbt/economic_data_pipeline --profiles-dir /opt/airflow/.dbt'
+            )
         )
-
-        transform_gold = BashOperator(
-            task_id='silver_to_gold',
-            bash_command=f'cd {PIPELINE_PATH} && python -m src.transformation.silver_to_gold'
-        )
-
-        transform_silver >> transform_gold
 
     # DATA QUALITY CHECK
     def run_data_quality_checks():
-        """Run data quality validators on gold tables"""
+        """Run data quality validators on dbt-built gold models"""
         import sys
         sys.path.insert(0, PIPELINE_PATH)
 
@@ -84,13 +80,13 @@ with DAG(
 
         engine = get_engine()
 
-        # Validate GDP
+        # Validate GDP (dbt model: gold.gdp_trends)
         gdp_df = pd.read_sql('SELECT * FROM gold.gdp_trends', engine)
         gdp_report = validate_gdp(gdp_df)
         if not gdp_report['passed']:
             raise ValueError(f"GDP quality check failed: {gdp_report['issues']}")
 
-        # Validate CPI
+        # Validate CPI (dbt model: gold.cpi_trends)
         cpi_df = pd.read_sql('SELECT * FROM gold.cpi_trends', engine)
         cpi_report = validate_cpi(cpi_df)
         if not cpi_report['passed']:

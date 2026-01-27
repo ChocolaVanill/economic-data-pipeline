@@ -1,24 +1,22 @@
 # 🇲🇾 Malaysia Economic Data Pipeline
 
-A production-grade data engineering project that ingests, transforms, and visualizes real-world economic indicators from Malaysia's official open data portal ([data.gov.my](https://data.gov.my)).
+Production-grade data engineering pipeline for Malaysian economic indicators sourced from data.gov.my.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791)
+![dbt](https://img.shields.io/badge/dbt-Transformations-FF694B)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B)
-![Tests](https://img.shields.io/badge/Tests-12%20Passing-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-Supported-2496ED)
 
-## 🎯 Overview
+## Overview
 
-This project implements the **Medallion Architecture** (Bronze → Silver → Gold) to transform raw API data into actionable business intelligence, featuring:
+- **Medallion architecture**: Bronze → Silver → Gold
+- **5 data sources**: GDP, CPI, Labour Force, Exchange Rates, Population
+- **Transformations**: dbt (SQL)
+- **Data quality**: Pydantic + custom validators
+- **Dashboard**: Streamlit + Plotly
 
-- **5 Data Sources**: GDP, CPI, Labour Force, Exchange Rates, Population
-- **3-Layer Architecture**: Raw → Cleaned → Aggregated
-- **Data Quality Framework**: Pydantic schema validation + custom validators
-- **Interactive Dashboard**: Built with Streamlit & Plotly
-- **Docker Support**: Containerized deployment with Docker Compose
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌───────────────┐
@@ -32,7 +30,7 @@ This project implements the **Medallion Architecture** (Bronze → Silver → Go
                    └──────────────────────────────────────────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1: Docker (Recommended)
 
@@ -40,8 +38,14 @@ This project implements the **Medallion Architecture** (Bronze → Silver → Go
 git clone https://github.com/sofaquitegud/economic-data-pipeline.git
 cd economic-data-pipeline
 
-# Start all services
-docker-compose up -d
+# Configure environment
+cp .env.example .env
+
+# Configure dbt profile (reads env vars)
+cp dbt/profiles.yml.example dbt/profiles.yml
+
+# Start services
+docker compose up -d
 
 # Access services:
 # - Streamlit Dashboard: http://localhost:8501
@@ -64,36 +68,57 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your PostgreSQL credentials
 
-# Create database schemas
+# Load env vars for dbt
+set -a
+source .env
+set +a
+
+# Create database schema (bronze only)
 psql -U your_user -h localhost -d malaysia_data -f sql/ddl/01_bronze_schema.sql
-psql -U your_user -h localhost -d malaysia_data -f sql/ddl/02_silver_schema.sql
-psql -U your_user -h localhost -d malaysia_data -f sql/ddl/03_gold_schema.sql
 
 # Run ingestion
 python -m src.ingestion.gdp_ingestion
 python -m src.ingestion.cpi_ingestion
 
-# Run transformations
-python -m src.transformation.bronze_to_silver
-python -m src.transformation.silver_to_gold
+# Configure dbt
+cp dbt/profiles.yml.example dbt/profiles.yml
+
+# Run transformations (dbt)
+dbt build --project-dir dbt/economic_data_pipeline --profiles-dir dbt
 
 # Launch dashboard
 streamlit run dashboards/streamlit/app.py
 ```
 
-## 🧪 Testing
+## dbt Workflow
 
 ```bash
-# Run all tests
-PYTHONPATH=. pytest tests/ -v
+dbt debug --project-dir dbt/economic_data_pipeline --profiles-dir dbt
+dbt build --project-dir dbt/economic_data_pipeline --profiles-dir dbt
+```
 
-# Run with coverage
+Notes:
+- dbt models read the latest `bronze.*_raw` batch and create `silver` and `gold` tables.
+- Only `sql/ddl/01_bronze_schema.sql` is needed for setup.
+
+## Airflow
+
+The Airflow DAG runs ingestion, then executes dbt:
+
+```
+dbt build --project-dir dbt/economic_data_pipeline --profiles-dir /opt/airflow/.dbt
+```
+
+Docker mounts your dbt profile at `/opt/airflow/.dbt/profiles.yml`.
+
+## Testing
+
+```bash
+PYTHONPATH=. pytest tests/ -v
 PYTHONPATH=. pytest tests/ -v --cov=src
 ```
 
-**Current status:** 12/12 tests passing ✅
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── config/                     # Configuration & schemas
@@ -102,35 +127,36 @@ PYTHONPATH=. pytest tests/ -v --cov=src
 │   └── schema.py               # Pydantic data models
 ├── src/
 │   ├── ingestion/              # API data ingestion scripts
-│   ├── transformation/         # Bronze → Silver → Gold transforms
 │   ├── quality/                # Data validation framework
 │   │   └── validators.py       # DataQualityValidator class
 │   └── utils/                  # Logging & helpers
+├── dbt/                        # dbt project (models + profiles example)
 ├── tests/                      # Unit tests (pytest)
 │   ├── test_ingestion.py       # API client tests
-│   └── test_transformation.py  # Transform & validator tests
-├── sql/ddl/                    # Database schema definitions
+│   └── test_quality.py         # Validator tests
+├── sql/ddl/                    # Database schema definitions (bronze)
 ├── dashboards/streamlit/       # Interactive dashboard
-├── airflow/                    # Airflow DAGs (WIP)
+├── airflow/                    # Airflow DAGs
 ├── docker-compose.yml          # Docker orchestration
 ├── Dockerfile                  # Container definition
 └── requirements.txt
 ```
 
-## 🔧 Tech Stack
+## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
 | Language | Python 3.10+ |
 | Database | PostgreSQL 14+ |
+| Transformations | dbt (SQL) |
 | Dashboard | Streamlit, Plotly |
 | ORM | SQLAlchemy |
 | Validation | Pydantic |
 | Testing | Pytest |
 | Containerization | Docker, Docker Compose |
-| Orchestration | Apache Airflow (WIP) |
+| Orchestration | Apache Airflow |
 
-## 📊 Data Sources
+## Data Sources
 
 | Dataset | Frequency | API Endpoint | Gold Metrics |
 |---------|-----------|--------------|--------------|
@@ -140,13 +166,11 @@ PYTHONPATH=. pytest tests/ -v --cov=src
 | Exchange Rates | Daily | `exchangerates_daily_1700` | Volatility, moving averages |
 | Population | Annual | `population_malaysia` | Growth rate, demographics |
 
-## ✅ Data Quality
-
-The project includes a robust data quality framework:
+## Data Quality
 
 - **Schema Validation**: Pydantic models ensure type safety at ingestion
-- **Custom Validators**: Pre-built checks for nulls, duplicates, date ranges, and outliers
-- **Per-Dataset Rules**: Each dataset has tailored validation rules
+- **Custom Validators**: Nulls, duplicates, date ranges, outliers
+- **Per-Dataset Rules**: Tailored checks per dataset
 
 ```python
 from src.quality.validators import DataQualityValidator
@@ -155,31 +179,30 @@ validator = DataQualityValidator.for_gdp()
 is_valid, report = validator.validate(df)
 ```
 
-## 📈 Dashboard Features
+## Dashboard
 
-The Streamlit dashboard displays:
-- GDP trends with 4-quarter moving averages
-- Year-over-Year and Month-over-Month growth rates
-- CPI inflation breakdown
+The Streamlit dashboard includes:
+- GDP trends with moving averages
+- MoM/YoY inflation rates
 - Exchange rate volatility
-- Interactive data exploration with filters
+- Interactive filters and exploration
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Medallion Architecture (Bronze/Silver/Gold)
 - [x] Data Quality Validators
 - [x] Pydantic Schema Validation
 - [x] Unit Tests (Pytest)
 - [x] Docker Support
-- [ ] Airflow DAGs for scheduling
+- [x] dbt Transformations
 - [ ] CI/CD Pipeline
 - [ ] Additional dashboard pages
 
-## 📄 License
+## License
 
 MIT License
 
-## 👤 Author
+## Author
 
 **Syafiq**  
 🐙 [GitHub](https://github.com/sofaquitegud)

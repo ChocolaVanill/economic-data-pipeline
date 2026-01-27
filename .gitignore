@@ -29,6 +29,9 @@ Thumbs.db
 .streamlit/
 .pytest_cache/
 .coverage
+dbt/profiles.yml
+dbt/economic_data_pipeline/target/
+dbt/economic_data_pipeline/dbt_packages/
 datagovmy_de_project.md
 airflow/logs/*
 !airflow/logs/.gitkeep
