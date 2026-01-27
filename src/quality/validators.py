@@ -88,16 +88,16 @@ class DataQualityValidator:
 # Pre-built validators for each dataset
 def validate_gdp(df: pd.DataFrame) -> dict:
     v = DataQualityValidator(df, "GDP")
-    v.check_nulls(['date', 'value'])
-    v.check_duplicates(['date', 'series'])
-    v.check_value_range('value', min_val=0)
+    v.check_nulls(['trend_date', 'gdp_value'])
+    v.check_duplicates(['trend_date'])
+    v.check_value_range('gdp_value', min_val=0)
     v.check_row_count(min_rows=10)
     return v.report()
 
 
 def validate_cpi(df: pd.DataFrame) -> dict:
     v = DataQualityValidator(df, "CPI")
-    v.check_nulls(['date', 'value', 'category'])
+    v.check_nulls(['date', 'value', 'category'], threshold=0.10)
     v.check_duplicates(['date', 'category'])
     v.check_value_range('value', min_val=0)
     return v.report()

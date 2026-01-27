@@ -101,7 +101,7 @@ services:
     networks:
       - pipeline_network
 
-  # Pipeline Service (Manual Trigger)
+  # Pipeline Service
   pipeline:
     build: .
     container_name: data_pipeline
