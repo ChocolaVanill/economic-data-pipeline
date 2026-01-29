@@ -29,7 +29,7 @@ st.markdown("Real-time economic data from data.gov.my")
 @st.cache_data(ttl=3600)
 def load_gdp_data():
     engine = get_engine()
-    df = pd.read_sql("SELECT * FROM gold.gdp_trends ORDER BY trend_date", engine)
+    df = pd.read_sql("SELECT * FROM analytics_gold.gdp_trends ORDER BY trend_date", engine)
     return df
 
 try:

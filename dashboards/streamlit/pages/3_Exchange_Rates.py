@@ -12,7 +12,7 @@ st.markdown("Daily exchange rates and volatility analysis")
 def load_exchange_data():
     engine = get_engine()
     df = pd.read_sql("""
-        SELECT * FROM gold.exchange_rate_analytics
+        SELECT * FROM analytics_gold.exchange_rate_analytics
         WHERE date >= CURRENT_DATE - INTERVAL '365 days'
         ORDER BY date DESC
     """, engine)

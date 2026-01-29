@@ -11,7 +11,7 @@ st.markdown("Employment, unemployment, and labour force data")
 @st.cache_data(ttl=3600)
 def load_labour_data():
     engine = get_engine()
-    df = pd.read_sql("SELECT * FROM gold.labour_summary ORDER BY date DESC", engine)
+    df = pd.read_sql("SELECT * FROM analytics_gold.labour_summary ORDER BY date DESC", engine)
     return df
 
 try:

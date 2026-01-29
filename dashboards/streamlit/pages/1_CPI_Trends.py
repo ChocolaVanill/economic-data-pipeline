@@ -11,7 +11,7 @@ st.markdown("Monthly CPI data across different categories")
 @st.cache_data(ttl=3600)
 def load_cpi_data():
     engine = get_engine()
-    df = pd.read_sql("SELECT * from gold.cpi_trends ORDER BY date DESC", engine)
+    df = pd.read_sql("SELECT * from analytics_gold.cpi_trends ORDER BY date DESC", engine)
     category_map = {
         '01': 'Food & Non-Alcoholic Beverages',
         '02': 'Alcoholic Beverages & Tobacco',
@@ -30,6 +30,7 @@ def load_cpi_data():
     df['category'] = df['category'].astype(str).str.strip()
     df['category'] = df['category'].replace(category_map)
     df['category'] = df['category'].str.title()
+    df['date'] = pd.to_datetime(df['date'])
     
     return df
 
