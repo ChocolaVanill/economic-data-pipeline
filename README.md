@@ -195,7 +195,7 @@ The Streamlit dashboard includes:
 - [x] Unit Tests (Pytest)
 - [x] Docker Support
 - [x] dbt Transformations
-- [ ] CI/CD Pipeline
+- [x] CI/CD Pipeline
 - [ ] Additional dashboard pages
 
 ## License

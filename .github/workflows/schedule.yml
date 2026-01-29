@@ -1,0 +1,106 @@
+name: Scheduled Jobs
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  daily-health-check:
+    name: Daily Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Test API endpoints
+        run: |
+          PYTHONPATH=. python -c "
+          import requests
+          from config.api_endpoints import ENDPOINTS
+          
+          for name, config in ENDPOINTS.items():
+              try:
+                  response = requests.get(config['url'])
+                  print(f'{name}: Status {response.status_code}')
+                  if response.status_code == 200:
+                      print(f'  Data preview: {len(response.text)} characters')
+                  else:
+                      print(f'  Warning: Non-200 status')
+              except Exception as e:
+                  print(f'{name}: Error - {e}')
+          "
+
+      - name: Check data freshness
+        run: |
+          echo "Checking data freshness metrics..."
+          # This would query your database to check when data was last updated
+          # For now, just a placeholder
+
+  dependency-check:
+    name: Dependency Updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check for outdated packages
+        run: |
+          pip install -r requirements.txt
+          pip list --outdated > outdated.txt
+          if [ -s outdated.txt ]; then
+            echo "Outdated packages found:"
+            cat outdated.txt
+          else
+            echo "All packages are up to date!"
+          fi
+
+      - name: Security audit
+        run: |
+          pip install safety
+          safety check -r requirements.txt || true
+
+  code-quality-trend:
+    name: Code Quality Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install radon
+
+      - name: Analyze code complexity
+        run: |
+          echo "Code complexity metrics:"
+          radon cc src/ -a
+          
+          echo "Maintainability index:"
+          radon mi src/
+
+      - name: Count lines of code
+        run: |
+          echo "Project statistics:"
+          find src/ -name "*.py" -type f -exec wc -l {} + | tail -1

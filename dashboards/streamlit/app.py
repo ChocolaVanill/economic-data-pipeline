@@ -11,6 +11,17 @@ st.set_page_config(
     layout="wide"
 )
 
+
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy"}
+
+
+# Health check endpoint (for CI/CD health checks)
+if st.query_params.get("health") == "1":
+    st.json({"status": "healthy"})
+    st.stop()
+
 st.title("🇲🇾 Malaysia Economic Indicators Dashboard")
 st.markdown("Real-time economic data from data.gov.my")
 
