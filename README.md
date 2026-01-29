@@ -7,6 +7,7 @@ Production-grade data engineering pipeline for Malaysian economic indicators sou
 ![dbt](https://img.shields.io/badge/dbt-Transformations-FF694B)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B)
 ![Docker](https://img.shields.io/badge/Docker-Supported-2496ED)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF)
 
 ## Overview
 
@@ -49,6 +50,7 @@ docker compose up -d
 
 # Access services:
 # - Streamlit Dashboard: http://localhost:8501
+# - Airflow UI: http://localhost:8080 (admin/admin)
 # - PostgreSQL: localhost:5432
 ```
 
@@ -98,7 +100,7 @@ dbt build --project-dir dbt/economic_data_pipeline --profiles-dir dbt
 ```
 
 Notes:
-- dbt models read the latest `bronze.*_raw` batch and create `silver` and `gold` tables.
+- dbt models read the latest `bronze.*_raw` batch and create `analytics_silver` and `analytics_gold` tables.
 - Only `sql/ddl/01_bronze_schema.sql` is needed for setup.
 
 ## Airflow
@@ -182,9 +184,10 @@ is_valid, report = validator.validate(df)
 ## Dashboard
 
 The Streamlit dashboard includes:
-- GDP trends with moving averages
-- MoM/YoY inflation rates
-- Exchange rate volatility
+- **GDP Overview**: GDP trends with moving averages and YoY growth
+- **CPI Trends**: Monthly inflation rates by category with MoM/YoY analysis
+- **Labour Market**: Employment statistics and unemployment rate trends
+- **Exchange Rates**: Currency analytics with volatility metrics
 - Interactive filters and exploration
 
 ## Roadmap
@@ -195,8 +198,10 @@ The Streamlit dashboard includes:
 - [x] Unit Tests (Pytest)
 - [x] Docker Support
 - [x] dbt Transformations
-- [x] CI/CD Pipeline
-- [ ] Additional dashboard pages
+- [x] CI/CD Pipeline (GitHub Actions)
+- [x] Dashboard Pages (GDP, CPI, Labour, Exchange Rates)
+- [ ] Alerting & Monitoring
+- [ ] Data Lineage Visualization
 
 ## License
 

@@ -20,8 +20,9 @@ This directory contains GitHub Actions workflows for continuous integration and 
   - Python linting (flake8)
   - Code formatting (black)
   - Import sorting (isort)
-  - Type checking (mypy)
-  - YAML validation
+  - Type checking (mypy --strict)
+  - YAML validation (yamllint)
+  - Dockerfile linting (hadolint)
   - SQL linting (sqlfluff)
 
 ### 3. `test.yml` - Testing
@@ -76,3 +77,9 @@ act
 # Run specific workflow
 act -W .github/workflows/test.yml
 ```
+
+## Notes
+
+- All Python code is checked with `mypy --strict` for type safety
+- Dockerfile uses `--no-install-recommends` for minimal image size
+- YAML files follow 120-character line limit
