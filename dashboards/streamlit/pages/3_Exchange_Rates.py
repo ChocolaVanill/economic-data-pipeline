@@ -21,7 +21,6 @@ def load_exchange_data():
 try:
     fx_df = load_exchange_data()
 
-    # Currency Names Mapping
     currency_names = {
         'AED': 'UAE Dirham',
         'AUD': 'Australian Dollar',

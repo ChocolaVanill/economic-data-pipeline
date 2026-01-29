@@ -12,7 +12,6 @@ st.markdown("Monthly CPI data across different categories")
 def load_cpi_data():
     engine = get_engine()
     df = pd.read_sql("SELECT * from gold.cpi_trends ORDER BY date DESC", engine)
-    # Map category codes to names
     category_map = {
         '01': 'Food & Non-Alcoholic Beverages',
         '02': 'Alcoholic Beverages & Tobacco',
@@ -28,7 +27,6 @@ def load_cpi_data():
         '12': 'Miscellaneous Goods & Services',
         '13': 'Overall'
     }
-    # Clean up category column: strip whitespace, map codes, then title case to merge 'overall'/'Overall'
     df['category'] = df['category'].astype(str).str.strip()
     df['category'] = df['category'].replace(category_map)
     df['category'] = df['category'].str.title()
@@ -38,7 +36,6 @@ def load_cpi_data():
 try:
     cpi_df = load_cpi_data()
 
-    # Filters
     col1, col2 = st.columns(2)
     with col1:
         categories = ['All'] + sorted(cpi_df['category'].unique().tolist())

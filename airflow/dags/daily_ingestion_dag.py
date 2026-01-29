@@ -5,7 +5,6 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
-# Default arguments
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -15,10 +14,8 @@ default_args = {
     'retry_delay': timedelta(minutes=30)
 }
 
-# Pipeline base path
 PIPELINE_PATH = '/opt/airflow/pipeline'
 
-# DAG definition
 with DAG(
     dag_id='economic_data_pipeline',
     default_args=default_args,
@@ -80,13 +77,11 @@ with DAG(
 
         engine = get_engine()
 
-        # Validate GDP (dbt model: gold.gdp_trends)
         gdp_df = pd.read_sql('SELECT * FROM gold.gdp_trends', engine)
         gdp_report = validate_gdp(gdp_df)
         if not gdp_report['passed']:
             raise ValueError(f"GDP quality check failed: {gdp_report['issues']}")
 
-        # Validate CPI (dbt model: gold.cpi_trends)
         cpi_df = pd.read_sql('SELECT * FROM gold.cpi_trends', engine)
         cpi_report = validate_cpi(cpi_df)
         if not cpi_report['passed']:

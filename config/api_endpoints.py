@@ -5,5 +5,5 @@ ENDPOINTS = {
     "cpi_headline": f"{BASE_URL}?id=cpi_headline",
     "labour_force": f"{BASE_URL}?id=lfs_month",
     "exchange_rates": f"{BASE_URL}?id=exchangerates_daily_1700",
-    "population": f"{BASE_URL}?id=population_malaysia"
+    "population": f"{BASE_URL}?id=population_malaysia",
 }

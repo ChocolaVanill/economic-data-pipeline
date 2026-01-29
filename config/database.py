@@ -1,10 +1,12 @@
 # Import libraries
 import os
-from sqlalchemy import create_engine
+
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
 
 # Initiate env file
 load_dotenv()
+
 
 # Main function
 def get_engine():

@@ -1,13 +1,16 @@
 # Import libraries
-import uuid
 import json
+import uuid
+
 from sqlalchemy import text
+
 from config.api_endpoints import ENDPOINTS
 from config.database import get_engine
 from src.ingestion.api_client import APIClient
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
 
 def ingest_gdp_data():
     client = APIClient()
@@ -27,10 +30,10 @@ def ingest_gdp_data():
             {
                 "endpoint": ENDPOINTS["gdp_quarterly"],
                 "status": 200,
-                "data": json.dumps(data), # Convert data into JSON
+                "data": json.dumps(data),  # Convert data into JSON
                 "count": len(data) if isinstance(data, list) else 1,
-                "batch_id": batch_id
-            }
+                "batch_id": batch_id,
+            },
         )
         conn.commit()
 

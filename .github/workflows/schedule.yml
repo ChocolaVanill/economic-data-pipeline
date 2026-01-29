@@ -27,7 +27,7 @@ jobs:
           PYTHONPATH=. python -c "
           import requests
           from config.api_endpoints import ENDPOINTS
-          
+
           for name, config in ENDPOINTS.items():
               try:
                   response = requests.get(config['url'])
@@ -96,7 +96,7 @@ jobs:
         run: |
           echo "Code complexity metrics:"
           radon cc src/ -a
-          
+
           echo "Maintainability index:"
           radon mi src/
 

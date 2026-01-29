@@ -17,7 +17,7 @@ def health_check():
     return {"status": "healthy"}
 
 
-# Health check endpoint (for CI/CD health checks)
+# Health check endpoint
 if st.query_params.get("health") == "1":
     st.json({"status": "healthy"})
     st.stop()

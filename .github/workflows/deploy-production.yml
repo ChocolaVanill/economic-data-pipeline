@@ -97,24 +97,27 @@ jobs:
         run: |
           echo "$DEPLOY_KEY" > deploy_key
           chmod 600 deploy_key
-          
+
           # Create backup tag before deployment
           ssh -i deploy_key -o StrictHostKeyChecking=no $PRODUCTION_HOST "
-            docker tag ${{ secrets.DOCKER_USERNAME }}/economic-data-pipeline:latest ${{ secrets.DOCKER_USERNAME }}/economic-data-pipeline:backup-\$(date +%Y%m%d-%H%M%S) || true
+            docker tag ${{ secrets.DOCKER_USERNAME }}/economic-data-pipeline:latest \
+              ${{ secrets.DOCKER_USERNAME }}/economic-data-pipeline:backup-\$(date +%Y%m%d-%H%M%S) \
+              || true
           "
-          
+
           # Upload new compose file
-          scp -i deploy_key -o StrictHostKeyChecking=no deployment/docker-compose.yml $PRODUCTION_HOST:/opt/malaysia-data-pipeline/
-          
+          scp -i deploy_key -o StrictHostKeyChecking=no \
+            deployment/docker-compose.yml $PRODUCTION_HOST:/opt/malaysia-data-pipeline/
+
           # Deploy with rollback capability
           ssh -i deploy_key -o StrictHostKeyChecking=no $PRODUCTION_HOST << 'EOF'
             cd /opt/malaysia-data-pipeline
             docker compose pull
             docker compose up -d
-            
+
             # Wait for deployment
             sleep 30
-            
+
             # Run health check
             if ! curl -f http://localhost:8501/health; then
               echo "Health check failed! Rolling back..."
@@ -134,13 +137,13 @@ jobs:
           PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
         run: |
           echo "Running post-deployment health checks..."
-          
+
           # Health endpoint check
           curl -f https://$PRODUCTION_URL/health || exit 1
-          
+
           # Dashboard accessibility
           curl -f https://$PRODUCTION_URL || exit 1
-          
+
           echo "All health checks passed!"
 
       - name: Notify success

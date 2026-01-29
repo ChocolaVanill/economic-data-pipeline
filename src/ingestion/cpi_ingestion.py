@@ -1,12 +1,13 @@
 # Import libraries
-import uuid
 import json
+import uuid
+
 from sqlalchemy import text
+
 from config.api_endpoints import ENDPOINTS
 from config.database import get_engine
 from src.ingestion.api_client import APIClient
 from src.utils.logger import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -30,8 +31,8 @@ def ingest_cpi_data():
                 "status": 200,
                 "data": json.dumps(data),
                 "count": len(data) if isinstance(data, list) else 1,
-                "batch_id": batch_id
-            }
+                "batch_id": batch_id,
+            },
         )
         conn.commit()
 
