@@ -3,14 +3,20 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 
 # Initiate env file
 load_dotenv()
 
 
 # Main function
-def get_engine():
+def get_engine() -> Engine:
     """Database connection"""
-    conn_string = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+    user = os.getenv("POSTGRES_USER")
+    password = os.getenv("POSTGRES_PASSWORD")
+    host = os.getenv("POSTGRES_HOST")
+    port = os.getenv("POSTGRES_PORT")
+    db = os.getenv("POSTGRES_DB")
+    conn_string = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
     return create_engine(conn_string, future=True)

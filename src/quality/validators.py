@@ -1,7 +1,7 @@
 """Data quality validation checks"""
 
 # Import libraries
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 
@@ -13,12 +13,12 @@ logger = get_logger(__name__)
 class DataQualityValidator:
     """Validates data quality across pipeline layers"""
 
-    def __init__(self, df: pd.DataFrame, dataset_name: str):
+    def __init__(self, df: pd.DataFrame, dataset_name: str) -> None:
         self.df = df
         self.dataset_name = dataset_name
         self.issues: list[str] = []
 
-    def check_nulls(self, columns: list, threshold: float = 0.05) -> bool:
+    def check_nulls(self, columns: list[str], threshold: float = 0.05) -> bool:
         """Check if null percentage exceeds threshold"""
         passed = True
         for col in columns:
@@ -31,7 +31,7 @@ class DataQualityValidator:
                     passed = False
         return passed
 
-    def check_duplicates(self, subset: list) -> bool:
+    def check_duplicates(self, subset: list[str]) -> bool:
         """Check for duplicate records"""
         dup_count = self.df.duplicated(subset=subset).sum()
         if dup_count > 0:
@@ -58,7 +58,10 @@ class DataQualityValidator:
         return passed
 
     def check_value_range(
-        self, col: str, min_val: Optional[float] = None, max_val: Optional[float] = None
+        self,
+        col: str,
+        min_val: Optional[float] = None,
+        max_val: Optional[float] = None,
     ) -> bool:
         """Check if values fall within expected range"""
         passed = True
@@ -77,9 +80,9 @@ class DataQualityValidator:
             return False
         return True
 
-    def report(self) -> dict:
+    def report(self) -> dict[str, object]:
         """Generate validation report"""
-        result = {
+        result: dict[str, object] = {
             "dataset": self.dataset_name,
             "row_count": len(self.df),
             "passed": len(self.issues) == 0,
@@ -98,7 +101,7 @@ class DataQualityValidator:
 
 
 # Pre-built validators for each dataset
-def validate_gdp(df: pd.DataFrame) -> dict:
+def validate_gdp(df: pd.DataFrame) -> dict[str, object]:
     v = DataQualityValidator(df, "GDP")
     v.check_nulls(["trend_date", "gdp_value"])
     v.check_duplicates(["trend_date"])
@@ -107,7 +110,7 @@ def validate_gdp(df: pd.DataFrame) -> dict:
     return v.report()
 
 
-def validate_cpi(df: pd.DataFrame) -> dict:
+def validate_cpi(df: pd.DataFrame) -> dict[str, object]:
     v = DataQualityValidator(df, "CPI")
     v.check_nulls(["date", "value", "category"], threshold=0.10)
     v.check_duplicates(["date", "category"])
@@ -115,14 +118,14 @@ def validate_cpi(df: pd.DataFrame) -> dict:
     return v.report()
 
 
-def validate_labour(df: pd.DataFrame) -> dict:
+def validate_labour(df: pd.DataFrame) -> dict[str, object]:
     v = DataQualityValidator(df, "Labour")
     v.check_nulls(["date", "metric", "value"])
     v.check_duplicates(["date", "metric"])
     return v.report()
 
 
-def validate_exchange_rates(df: pd.DataFrame) -> dict:
+def validate_exchange_rates(df: pd.DataFrame) -> dict[str, object]:
     v = DataQualityValidator(df, "Exchange Rates")
     v.check_nulls(["date", "currency_code", "rate"])
     v.check_duplicates(["date", "currency_code"])
@@ -130,7 +133,7 @@ def validate_exchange_rates(df: pd.DataFrame) -> dict:
     return v.report()
 
 
-def validate_population(df: pd.DataFrame) -> dict:
+def validate_population(df: pd.DataFrame) -> dict[str, object]:
     v = DataQualityValidator(df, "Population")
     v.check_nulls(["date", "population"])
     v.check_value_range("population", min_val=0)

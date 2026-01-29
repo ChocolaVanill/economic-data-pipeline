@@ -12,7 +12,7 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def ingest_gdp_data():
+def ingest_gdp_data() -> str:
     client = APIClient()
     engine = get_engine()
     batch_id = str(uuid.uuid4())
@@ -23,10 +23,13 @@ def ingest_gdp_data():
     # Store raw data in bronze layer
     with engine.connect() as conn:
         conn.execute(
-            text("""
-            INSERT INTO bronze.gdp_raw (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
-            VALUES (:endpoint, :status, :data, :count, :batch_id)
-            """),
+            text(
+                """
+                INSERT INTO bronze.gdp_raw
+                (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
+                VALUES (:endpoint, :status, :data, :count, :batch_id)
+                """
+            ),
             {
                 "endpoint": ENDPOINTS["gdp_quarterly"],
                 "status": 200,

@@ -3,7 +3,6 @@
 # Import libraries
 from unittest.mock import MagicMock, patch
 
-import pytest
 import requests
 
 from src.ingestion.api_client import APIClient

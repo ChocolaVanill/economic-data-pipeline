@@ -12,7 +12,7 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def ingest_population_data():
+def ingest_population_data() -> str:
     client = APIClient()
     engine = get_engine()
     batch_id = str(uuid.uuid4())
@@ -22,10 +22,13 @@ def ingest_population_data():
 
     with engine.connect() as conn:
         conn.execute(
-            text("""
-            INSERT INTO bronze.population_raw (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
-            VALUES (:endpoint, :status, :data, :count, :batch_id)
-            """),
+            text(
+                """
+                INSERT INTO bronze.population_raw
+                (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
+                VALUES (:endpoint, :status, :data, :count, :batch_id)
+                """
+            ),
             {
                 "endpoint": ENDPOINTS["population"],
                 "status": 200,

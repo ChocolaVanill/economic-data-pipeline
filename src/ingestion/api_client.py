@@ -21,7 +21,8 @@ class APIClient:
             try:
                 response = requests.get(url, params=params, timeout=30)
                 response.raise_for_status()
-                return response.json()
+                result: dict[str, Any] = response.json()
+                return result
             except requests.RequestException as e:
                 logger.warning(f"Attempt {attempt + 1} failed: {e}")
                 if attempt < self.max_retries - 1:
