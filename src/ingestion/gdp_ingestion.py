@@ -23,13 +23,11 @@ def ingest_gdp_data() -> str:
     # Store raw data in bronze layer
     with engine.connect() as conn:
         conn.execute(
-            text(
-                """
+            text("""
                 INSERT INTO bronze.gdp_raw
                 (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
                 VALUES (:endpoint, :status, :data, :count, :batch_id)
-                """
-            ),
+                """),
             {
                 "endpoint": ENDPOINTS["gdp_quarterly"],
                 "status": 200,

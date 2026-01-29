@@ -22,13 +22,11 @@ def ingest_exchange_rates_data() -> str:
 
     with engine.connect() as conn:
         conn.execute(
-            text(
-                """
+            text("""
                 INSERT INTO bronze.exchange_rates_raw
                 (api_endpoint, response_status, raw_data, row_count, ingestion_batch_id)
                 VALUES (:endpoint, :status, :data, :count, :batch_id)
-                """
-            ),
+                """),
             {
                 "endpoint": ENDPOINTS["exchange_rates"],
                 "status": 200,
