@@ -1,8 +1,8 @@
 name: Deploy to Production
 
 on:
+  # Only run on version tags or manual trigger (not on every push to main)
   push:
-    branches: [main]
     tags:
       - 'v*'
   workflow_dispatch:
