@@ -2,6 +2,7 @@
 
 This module ensures the bronze schema and tables exist before ingestion runs.
 """
+
 import os
 from pathlib import Path
 
@@ -22,10 +23,8 @@ def get_connection_string() -> str:
     return f"postgresql://{user}:{password}@{host}:{port}/{database}"
 
 
-def ensure_schema():
-    """Create bronze schema and tables if they don't exist.
-
-    """
+def ensure_schema() -> None:
+    """Create bronze schema and tables if they don't exist."""
     engine = create_engine(get_connection_string())
 
     # Read DDL from file
