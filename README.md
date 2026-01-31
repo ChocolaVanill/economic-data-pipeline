@@ -45,14 +45,18 @@ cp .env.example .env
 # Configure dbt profile (reads env vars)
 cp dbt/profiles.yml.example dbt/profiles.yml
 
-# Start services
+# Start services (Airflow uses Celery + Redis)
 docker compose up -d
 
 # Access services:
 # - Streamlit Dashboard: http://localhost:8501
 # - Airflow UI: http://localhost:8080 (admin/admin)
-# - PostgreSQL: localhost:5432
 ```
+
+Notes:
+- For Supabase, set `POSTGRES_HOST/PORT/USER/PASSWORD/DB` in `.env`.
+- For the Airflow metadata DB, set `AIRFLOW_DB_USER/AIRFLOW_DB_PASSWORD/AIRFLOW_DB_NAME` in `.env`.
+- Local Postgres is optional: `docker compose --profile local-db up` (not used with Supabase).
 
 ### Option 2: Local Development
 
@@ -100,7 +104,7 @@ dbt build --project-dir dbt/economic_data_pipeline --profiles-dir dbt
 ```
 
 Notes:
-- dbt models read the latest `bronze.*_raw` batch and create `analytics_silver` and `analytics_gold` tables.
+- dbt models read the latest `bronze.*_raw` batch and create `analytics_silver` and `analytics_gold` schemas.
 - Only `sql/ddl/01_bronze_schema.sql` is needed for setup.
 
 ## Airflow
@@ -175,10 +179,10 @@ PYTHONPATH=. pytest tests/ -v --cov=src
 - **Per-Dataset Rules**: Tailored checks per dataset
 
 ```python
-from src.quality.validators import DataQualityValidator
+from src.quality.validators import validate_gdp
 
-validator = DataQualityValidator.for_gdp()
-is_valid, report = validator.validate(df)
+report = validate_gdp(df)
+passed = report["passed"]
 ```
 
 ## Dashboard

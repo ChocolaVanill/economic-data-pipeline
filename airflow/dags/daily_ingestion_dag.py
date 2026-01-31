@@ -11,10 +11,12 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 2,
-    'retry_delay': timedelta(minutes=30)
+    'retry_delay': timedelta(minutes=5)
 }
 
 PIPELINE_PATH = '/opt/airflow/pipeline'
+DBT_PROJECT_DIR = f'{PIPELINE_PATH}/dbt/economic_data_pipeline'
+DBT_PROFILES_DIR = '/opt/airflow/.dbt'
 
 with DAG(
     dag_id='economic_data_pipeline',
@@ -25,6 +27,20 @@ with DAG(
     catchup=False,
     tags=['economic', 'malaysia', 'etl']
 ) as dag:
+
+    # SCHEMA INITIALIZATION
+    def init_schema():
+        """Ensure bronze schema and tables exist."""
+        import sys
+        sys.path.insert(0, PIPELINE_PATH)
+        from src.init_schema import ensure_schema
+        ensure_schema()
+
+    schema_init = PythonOperator(
+        task_id='init_schema',
+        python_callable=init_schema,
+        retries=1
+    )
 
     # INGESTION TASKS
     with TaskGroup('ingestion', tooltip='Ingest data from data.gov.my') as ingestion_group:
@@ -57,18 +73,33 @@ with DAG(
     # TRANSFORMATION TASKS
     with TaskGroup('transformation', tooltip='Bronze -> Silver -> Gold (dbt)') as transform_group:
 
+        setup_dbt = BashOperator(
+            task_id='setup_dbt',
+            bash_command=(
+                f'mkdir -p {DBT_PROJECT_DIR}/logs {DBT_PROJECT_DIR}/target && '
+                f'chmod -R 777 {DBT_PROJECT_DIR}/logs {DBT_PROJECT_DIR}/target || true'
+            )
+        )
+
         dbt_build = BashOperator(
             task_id='dbt_build',
             bash_command=(
                 f'cd {PIPELINE_PATH} && '
-                'dbt build --project-dir dbt/economic_data_pipeline --profiles-dir /opt/airflow/.dbt'
+                f'dbt build '
+                f'--project-dir {DBT_PROJECT_DIR} '
+                f'--profiles-dir {DBT_PROFILES_DIR} '
+                f'--log-path /tmp/dbt.log '
+                f'--target-path /tmp/dbt_target'
             )
         )
 
+        setup_dbt >> dbt_build
+
     # DATA QUALITY CHECK
     def run_data_quality_checks():
-        """Run data quality validators on dbt-built gold models"""
+        """Run data quality validators on dbt-built gold models."""
         import sys
+        import os
         sys.path.insert(0, PIPELINE_PATH)
 
         from src.quality.validators import validate_gdp, validate_cpi
@@ -77,12 +108,15 @@ with DAG(
 
         engine = get_engine()
 
-        gdp_df = pd.read_sql('SELECT * FROM gold.gdp_trends', engine)
+        base_schema = os.getenv("DBT_SCHEMA", "analytics")
+        gold_schema = f"{base_schema}_gold"
+
+        gdp_df = pd.read_sql(f'SELECT * FROM {gold_schema}.gdp_trends', engine)
         gdp_report = validate_gdp(gdp_df)
         if not gdp_report['passed']:
             raise ValueError(f"GDP quality check failed: {gdp_report['issues']}")
 
-        cpi_df = pd.read_sql('SELECT * FROM gold.cpi_trends', engine)
+        cpi_df = pd.read_sql(f'SELECT * FROM {gold_schema}.cpi_trends', engine)
         cpi_report = validate_cpi(cpi_df)
         if not cpi_report['passed']:
             raise ValueError(f"CPI quality check failed: {cpi_report['issues']}")
@@ -95,4 +129,4 @@ with DAG(
     )
 
     # TASK DEPENDENCIES
-    ingestion_group >> transform_group >> quality_check
+    schema_init >> ingestion_group >> transform_group >> quality_check

@@ -1,17 +1,18 @@
 x-airflow-common: &airflow-common
-  image: apache/airflow:2.8.0-python3.11
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
   env_file:
     - .env
   environment:
-    AIRFLOW__CORE__EXECUTOR: LocalExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
+    AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30
-    PIP_ADDITIONAL_REQUIREMENTS: dbt-postgres==1.8.2
-    POSTGRES_HOST: postgres
-    POSTGRES_PORT: 5432
     PYTHONPATH: /opt/airflow/pipeline
   volumes:
     - ./airflow/dags:/opt/airflow/dags
@@ -20,8 +21,10 @@ x-airflow-common: &airflow-common
     - ./dbt/profiles.yml:/opt/airflow/.dbt/profiles.yml:ro
 
 services:
-  # Main Database
+  # Main DB (only for local dev)
   postgres:
+    profiles:
+      - local-db
     image: postgres:15
     container_name: malaysia_db
     environment:
@@ -34,7 +37,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./sql/ddl/01_bronze_schema.sql:/docker-entrypoint-initdb.d/01_bronze_schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -46,16 +49,23 @@ services:
     image: postgres:15
     container_name: airflow_db
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${AIRFLOW_DB_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_DB_NAME}
     volumes:
       - airflow_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      test: [ "CMD-SHELL", "pg_isready -U airflow" ]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - pipeline_network
+
+  # Celery Broker
+  redis:
+    image: redis:7
+    container_name: airflow_redis
     networks:
       - pipeline_network
 
@@ -82,13 +92,15 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
     depends_on:
       airflow-init:
         condition: service_completed_successfully
+      redis:
+        condition: service_started
     networks:
       - pipeline_network
 
@@ -100,6 +112,21 @@ services:
     depends_on:
       airflow-init:
         condition: service_completed_successfully
+      redis:
+        condition: service_started
+    networks:
+      - pipeline_network
+
+  # Airflow Worker
+  airflow-worker:
+    <<: *airflow-common
+    container_name: airflow_worker
+    command: celery worker
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     networks:
       - pipeline_network
 
@@ -107,15 +134,8 @@ services:
   pipeline:
     build: .
     container_name: data_pipeline
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-malaysia_data}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+    env_file:
+      - .env
     volumes:
       - .:/app
     networks:
@@ -137,15 +157,8 @@ services:
   dashboard:
     build: .
     container_name: streamlit_dashboard
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-malaysia_data}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+    env_file:
+      - .env
     ports:
       - "8501:8501"
     volumes:
