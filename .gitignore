@@ -36,5 +36,6 @@ dbt/economic_data_pipeline/dbt_packages/
 datagovmy_de_project.md
 airflow/logs/*
 !airflow/logs/.gitkeep
-CONTRIBUTING.md
-SECURITY.md
+session_summary.md
+test_simple_connection.py
+test_supabase_connection.py
